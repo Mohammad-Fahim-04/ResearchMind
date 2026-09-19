@@ -8,7 +8,10 @@ from pipeline import run_research_pipeline
 app = FastAPI(title="ResearchMind API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://researchmind-mnv005jgo-mohammad-fahim-s-projects.vercel.app",
+    ],
     allow_methods=["POST"],
     allow_headers=["*"],
 )
