@@ -11,6 +11,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "https://researchmind-mnv005jgo-mohammad-fahim-s-projects.vercel.app",
+        "https://researchmind-frontend.onrender.com",
     ],
     allow_methods=["POST"],
     allow_headers=["*"],
