@@ -18,3 +18,18 @@ export async function runResearch(topic) {
 
     return response.json()
 }
+
+export async function chatWithResearch(researchId, query) {
+    const response = await fetch(`${API_URL}/${researchId}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+    })
+
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok) {
+        throw new Error(body.error || body.detail || 'The research chat could not be completed.')
+    }
+
+    return body
+}

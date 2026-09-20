@@ -91,3 +91,58 @@ export async function createResearch(req, res) {
         })
     }
 }
+
+function runPythonChat(query) {
+    const python = process.platform === 'win32'
+        ? path.join(root, '.venv', 'Scripts', 'python.exe')
+        : path.join(root, '.venv', 'bin', 'python')
+
+    return new Promise((resolve, reject) => {
+        const p = spawn(python, ['-u', '-c', `
+import json, sys
+from utils.rag import answer_with_rag
+print(json.dumps({"answer": answer_with_rag(sys.argv[1])}))
+        `, query], { cwd: root, env: process.env, windowsHide: true })
+
+        let output = ''
+        let error = ''
+        p.stdout.on('data', chunk => { output += chunk.toString() })
+        p.stderr.on('data', chunk => { error += chunk.toString() })
+        p.on('error', startError => reject(new Error(`Could not start Python: ${startError.message}`)))
+        p.on('close', code => {
+            if (code !== 0) {
+                reject(new Error(error.trim() || output.trim() || `Python exited with code ${code}`))
+                return
+            }
+            try {
+                resolve(JSON.parse(output.trim()))
+            } catch (parseError) {
+                reject(new Error(`Invalid chat response: ${parseError.message}`))
+            }
+        })
+    })
+}
+
+export async function chatWithResearch(req, res) {
+    const query = req.body?.query?.trim()
+    if (!query) {
+        return res.status(400).json({ success: false, error: 'A question is required.' })
+    }
+
+    try {
+        const research = await Research.findById(req.params.researchId)
+        if (!research) {
+            return res.status(404).json({ success: false, error: 'Research not found.' })
+        }
+
+        const result = await runPythonChat(query)
+        res.json({
+            success: true,
+            answer: result.answer,
+            sources: research.searchResults,
+        })
+    } catch (error) {
+        console.error('RESEARCH CHAT ERROR:', error.message)
+        res.status(500).json({ success: false, error: 'Research chat is temporarily unavailable.' })
+    }
+}
