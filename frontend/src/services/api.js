@@ -1,4 +1,8 @@
-const API_URL = 'https://researchmind-a0fe.onrender.com/api/research'
+const API_URL = import.meta.env.VITE_API_URL || (
+    window.location.hostname === 'localhost'
+        ? 'http://localhost:5000/api/research'
+        : 'https://researchmind-a0fe.onrender.com/api/research'
+)
 
 export async function runResearch(topic) {
     const response = await fetch(API_URL, {
