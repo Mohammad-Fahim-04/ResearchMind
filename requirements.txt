@@ -45,5 +45,4 @@ html5lib>=1.1
 # ResearchMind API
 fastapi>=0.115.0
 uvicorn>=0.30.0
-
-sentence-transformers
+qdrant-client>=1.12.0
