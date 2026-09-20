@@ -2,11 +2,32 @@ import { spawn } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Research from '../models/Research.js'
+import { compareResearches as runResearchComparison } from '../services/researchComparisonService.js'
 
 const root = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     '../..'
 )
+
+export async function getResearches(req, res) {
+    try {
+        const researches = await Research.find()
+            .select('_id topic createdAt')
+            .sort({ createdAt: -1 })
+            .lean()
+
+        return res.json({
+            success: true,
+            researches,
+        })
+    } catch (error) {
+        console.error('GET RESEARCHES ERROR:', error.message)
+        return res.status(500).json({
+            success: false,
+            error: 'Research list is temporarily unavailable.',
+        })
+    }
+}
 
 function runPython(topic) {
     const python = process.platform === 'win32'
@@ -144,5 +165,39 @@ export async function chatWithResearch(req, res) {
     } catch (error) {
         console.error('RESEARCH CHAT ERROR:', error.message)
         res.status(500).json({ success: false, error: 'Research chat is temporarily unavailable.' })
+    }
+}
+
+export async function compareResearches(req, res) {
+    const { researchId1, researchId2 } = req.body || {}
+
+    if (!researchId1 || !researchId2) {
+        return res.status(400).json({
+            success: false,
+            error: 'Both researchId1 and researchId2 are required.',
+        })
+    }
+
+    try {
+        const comparison = await runResearchComparison(researchId1, researchId2)
+        return res.json({
+            success: true,
+            comparison,
+        })
+    } catch (error) {
+        console.error('RESEARCH COMPARISON ERROR:', error.message)
+
+        if (error.message.includes('valid MongoDB IDs')) {
+            return res.status(400).json({ success: false, error: error.message })
+        }
+
+        if (error.message.includes('Research document not found')) {
+            return res.status(404).json({ success: false, error: error.message })
+        }
+
+        return res.status(500).json({
+            success: false,
+            error: 'Research comparison is temporarily unavailable.',
+        })
     }
 }

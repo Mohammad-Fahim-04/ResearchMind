@@ -33,3 +33,26 @@ export async function chatWithResearch(researchId, query) {
 
     return body
 }
+
+export async function getResearches() {
+    const response = await fetch(API_URL)
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok) {
+        throw new Error(body.error || body.detail || 'The research list could not be loaded.')
+    }
+    return body
+}
+
+export async function compareResearch(researchId1, researchId2) {
+    const response = await fetch(`${API_URL}/compare`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ researchId1, researchId2 }),
+    })
+
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok) {
+        throw new Error(body.error || body.detail || 'The research comparison could not be completed.')
+    }
+    return body
+}

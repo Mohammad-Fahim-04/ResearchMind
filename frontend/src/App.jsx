@@ -3,6 +3,7 @@ import Hero from './components/Hero'
 import ResearchInput from './components/ResearchInput'
 import Pipeline from './components/Pipeline'
 import Results from './components/Results'
+import ResearchComparison from './components/ResearchComparison'
 import { runResearch } from './services/api'
 
 export default function App() {
@@ -45,5 +46,5 @@ export default function App() {
         }
     }
 
-    return <main className="app-shell"><div className="topbar"><div className="brand-mark"><span>R</span> ResearchMind</div><div className="system-state"><i /> System ready <span>v1.0</span></div></div><Hero /><ResearchInput topic={topic} setTopic={setTopic} onSubmit={handleRun} isRunning={isRunning} /><Pipeline statuses={statuses} isRunning={isRunning} completed={Boolean(results)} />{error && <div className="error-message">{error}</div>}<Results results={results} /><footer><span>ResearchMind</span><span>Built for better questions.</span></footer></main>
+    return <main className="app-shell"><div className="topbar"><div className="brand-mark"><span>R</span> ResearchMind</div><div className="system-state"><i /> System ready <span>v1.0</span></div></div><Hero /><ResearchInput topic={topic} setTopic={setTopic} onSubmit={handleRun} isRunning={isRunning} /><Pipeline statuses={statuses} isRunning={isRunning} completed={Boolean(results)} />{error && <div className="error-message">{error}</div>}<Results results={results} /><ResearchComparison /><footer><span>ResearchMind</span><span>Built for better questions.</span></footer></main>
 }
