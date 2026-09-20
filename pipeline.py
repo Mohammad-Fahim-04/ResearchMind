@@ -2,6 +2,9 @@ import json
 import sys
 
 from agents import build_reader_agent, build_search_agent, writer_chain, critic_chain
+from utils.chunker import chunk_text
+from utils.embeddings import create_embeddings
+from utils.vector_store import store_embeddings
 
 
 def _log_status(message):
@@ -121,6 +124,12 @@ def run_research_pipeline(topic : str) -> dict:
     state["statuses"]["critic"] = "DONE"
 
     _log_status("step 4 complete - critic feedback received")
+    state["chunks"] = chunk_text(state["report"])
+    _log_status(f"DIAGNOSTIC chunks length: {len(state['chunks'])}")
+    embeddings = create_embeddings(state["chunks"])
+    _log_status(f"DIAGNOSTIC embeddings length: {len(embeddings)}")
+    stored_vectors = store_embeddings(embeddings, state["chunks"])
+    _log_status(f"DIAGNOSTIC store_embeddings result: {stored_vectors}")
 
     return state
 
