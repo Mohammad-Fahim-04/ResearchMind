@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { chatWithResearch } from '../services/api'
 
 export default function ResearchChat({ researchId }) {
@@ -47,7 +48,7 @@ export default function ResearchChat({ researchId }) {
         <div className="chat-messages" aria-live="polite">
             {messages.length === 0 && !isLoading && <div className="chat-empty">Ask a question to explore the report.</div>}
             {messages.map((message, index) => <div className={`chat-message ${message.role}`} key={`${message.role}-${index}`}>
-                <div className="chat-bubble">{message.content}
+                <div className="chat-bubble">{message.role === 'assistant' ? <ReactMarkdown components={{ a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" /> }}>{message.content}</ReactMarkdown> : message.content}
                     {message.sources?.length > 0 && <div className="chat-sources"><span>Sources</span>{message.sources.map(source => <a href={source.url} target="_blank" rel="noopener noreferrer" key={source.url}>{source.title || source.url}</a>)}</div>}
                 </div>
             </div>)}
