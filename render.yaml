@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: researchmind
+    env: node
+    rootDir: .
+    buildCommand: npm install --prefix server && pip install -r requirements.txt
+    startCommand: npm start --prefix server
