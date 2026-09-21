@@ -8,8 +8,9 @@
         "dev": "node --watch server.js"
     },
     "dependencies": {
-        "cors": "^2.8.5",
-        "express": "^4.21.1",
-        "mongoose": "^9.10.1"
-    }
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "mongoose": "^9.10.1",
+    "dotenv": "^16.4.5"
+}
 }
