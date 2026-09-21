@@ -1,3 +1,5 @@
+import uuid
+
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 
@@ -20,14 +22,14 @@ def create_collection():
     )
 
 
-def store_embeddings(embeddings, chunks):
+def store_embeddings(embeddings, chunks, research_id):
     create_collection()
 
     points = [
         PointStruct(
-            id=i,
+            id=str(uuid.uuid4()),
             vector=embedding,
-            payload={"text": chunk},
+            payload={"text": chunk, "research_id": research_id},
         )
         for i, (embedding, chunk) in enumerate(zip(embeddings, chunks))
     ]

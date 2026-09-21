@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import mongoose from 'mongoose'
 import Research from '../models/Research.js'
 import { compareResearches as runResearchComparison } from '../services/researchComparisonService.js'
 
@@ -29,7 +30,7 @@ export async function getResearches(req, res) {
     }
 }
 
-function runPython(topic) {
+function runPython(topic, researchId) {
     const python = process.platform === 'win32'
         ? path.join(root, '.venv', 'Scripts', 'python.exe')
         : path.join(root, '.venv', 'bin', 'python')
@@ -41,9 +42,9 @@ function runPython(topic) {
 import json, sys
 from pipeline import run_research_pipeline
 
-result = run_research_pipeline(sys.argv[1])
+result = run_research_pipeline(sys.argv[1], sys.argv[2])
 print(json.dumps(result))
-            `, topic],
+            `, topic, researchId],
             { cwd: root, env: process.env }
         )
 
@@ -82,11 +83,13 @@ export async function createResearch(req, res) {
     try {
         console.log('RUNNING PIPELINE...')
 
-        const result = await runPython(topic)
+        const researchId = new mongoose.Types.ObjectId()
+        const result = await runPython(topic, researchId.toString())
 
         console.log('PIPELINE COMPLETED')
 
         const research = await Research.create({
+            _id: researchId,
             topic,
             report: result.report || '',
             searchResults: result.search_results || [],
@@ -113,7 +116,7 @@ export async function createResearch(req, res) {
     }
 }
 
-function runPythonChat(query) {
+function runPythonChat({ query, researchId, topic, report }) {
     const python = process.platform === 'win32'
         ? path.join(root, '.venv', 'Scripts', 'python.exe')
         : path.join(root, '.venv', 'bin', 'python')
@@ -122,13 +125,26 @@ function runPythonChat(query) {
         const p = spawn(python, ['-u', '-c', `
 import json, sys
 from utils.rag import answer_with_rag
-print(json.dumps({"answer": answer_with_rag(sys.argv[1])}))
-        `, query], { cwd: root, env: process.env, windowsHide: true })
+request = json.loads(sys.stdin.read())
+answer = answer_with_rag(
+    request["query"],
+    request["research_id"],
+    request["topic"],
+    request.get("report", ""),
+)
+print(json.dumps({"answer": answer}))
+        `], { cwd: root, env: process.env, windowsHide: true })
 
         let output = ''
         let error = ''
         p.stdout.on('data', chunk => { output += chunk.toString() })
         p.stderr.on('data', chunk => { error += chunk.toString() })
+        p.stdin.end(JSON.stringify({
+            query,
+            research_id: researchId,
+            topic,
+            report,
+        }))
         p.on('error', startError => reject(new Error(`Could not start Python: ${startError.message}`)))
         p.on('close', code => {
             if (code !== 0) {
@@ -156,11 +172,15 @@ export async function chatWithResearch(req, res) {
             return res.status(404).json({ success: false, error: 'Research not found.' })
         }
 
-        const result = await runPythonChat(query)
+        const result = await runPythonChat({
+            query,
+            researchId: req.params.researchId,
+            topic: research.topic,
+            report: research.report,
+        })
         res.json({
             success: true,
             answer: result.answer,
-            sources: research.searchResults,
         })
     } catch (error) {
         console.error('RESEARCH CHAT ERROR:', error.message)

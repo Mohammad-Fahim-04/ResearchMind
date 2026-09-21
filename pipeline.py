@@ -64,7 +64,7 @@ def _append_verified_sources(report, sources):
         report = report.split("## Sources", 1)[0].rstrip()
     return f"{report}\n\n{source_section}"
 
-def run_research_pipeline(topic : str) -> dict:
+def run_research_pipeline(topic: str, research_id: str | None = None) -> dict:
 
     state = {"topic": topic, "statuses": {"search": "RUNNING"}}
 
@@ -128,7 +128,7 @@ def run_research_pipeline(topic : str) -> dict:
     _log_status(f"DIAGNOSTIC chunks length: {len(state['chunks'])}")
     embeddings = create_embeddings(state["chunks"])
     _log_status(f"DIAGNOSTIC embeddings length: {len(embeddings)}")
-    stored_vectors = store_embeddings(embeddings, state["chunks"])
+    stored_vectors = store_embeddings(embeddings, state["chunks"], research_id)
     _log_status(f"DIAGNOSTIC store_embeddings result: {stored_vectors}")
 
     return state
