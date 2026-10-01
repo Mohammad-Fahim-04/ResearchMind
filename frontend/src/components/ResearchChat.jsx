@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { chatWithResearch } from '../services/api'
+import CircuitLines from './CircuitLines'
 
 export default function ResearchChat({ researchId }) {
     const [messages, setMessages] = useState([])
@@ -37,7 +38,8 @@ export default function ResearchChat({ researchId }) {
         }
     }
 
-    return <section className="research-chat">
+    return <section id="research-chat" className="research-chat">
+        <CircuitLines variant="a" placement="chat" />
         <div className="chat-heading">
             <div>
                 <div className="section-kicker">Research dialogue <span>06</span></div>

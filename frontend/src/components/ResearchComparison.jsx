@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { compareResearch, getResearches } from '../services/api'
+import CircuitLines from './CircuitLines'
 
 const comparisonSections = [
     ['similarities', 'Similarities'],
@@ -54,6 +55,7 @@ export default function ResearchComparison() {
     </>
 
     return <section className="comparison-section">
+        <CircuitLines variant="c" placement="comparison" />
         <div className="section-kicker">Research comparison <span>07</span></div>
         <div className="comparison-card">
             <div className="comparison-heading">
